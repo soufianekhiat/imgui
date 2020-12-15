@@ -487,7 +487,7 @@ IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARA
 #if !defined(_versionhelpers_H_INCLUDED_) && !defined(_INC_VERSIONHELPERS)
 static BOOL IsWindowsVersionOrGreater(WORD major, WORD minor, WORD sp)
 {
-    OSVERSIONINFOEXW osvi = { sizeof(osvi), major, minor, 0, 0, { 0 }, sp };
+    OSVERSIONINFOEXW osvi = { sizeof(osvi), major, minor, 0, 0, { 0 }, sp, 0, 0, 0, 0 };
     DWORD mask = VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR;
     ULONGLONG cond = ::VerSetConditionMask(0, VER_MAJORVERSION, VER_GREATER_EQUAL);
     cond = ::VerSetConditionMask(cond, VER_MINORVERSION, VER_GREATER_EQUAL);
@@ -515,6 +515,9 @@ typedef DPI_AWARENESS_CONTEXT(WINAPI* PFN_SetThreadDpiAwarenessContext)(DPI_AWAR
 // Helper function to enable DPI awareness without setting up a manifest
 void ImGui_ImplWin32_EnableDpiAwareness()
 {
+    // Make sure monitors will be updated with latest correct scaling
+    g_WantUpdateMonitors = true;
+
     // if (IsWindows10OrGreater()) // This needs a manifest to succeed. Instead we try to grab the function pointer!
     {
         static HINSTANCE user32_dll = ::LoadLibraryA("user32.dll"); // Reference counted per-process
@@ -533,10 +536,12 @@ void ImGui_ImplWin32_EnableDpiAwareness()
             return;
         }
     }
-    SetProcessDPIAware();
+#if _WIN32_WINNT >= 0x0600
+    ::SetProcessDPIAware();
+#endif
 }
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(NOGDI)
 #pragma comment(lib, "gdi32")   // Link with gdi32.lib for GetDeviceCaps()
 #endif
 
@@ -549,6 +554,7 @@ float ImGui_ImplWin32_GetDpiScaleForMonitor(void* monitor)
         if (PFN_GetDpiForMonitor GetDpiForMonitorFn = (PFN_GetDpiForMonitor)::GetProcAddress(shcore_dll, "GetDpiForMonitor"))
             GetDpiForMonitorFn((HMONITOR)monitor, MDT_EFFECTIVE_DPI, &xdpi, &ydpi);
     }
+#ifndef NOGDI
     else
     {
         const HDC dc = ::GetDC(NULL);
@@ -556,6 +562,7 @@ float ImGui_ImplWin32_GetDpiScaleForMonitor(void* monitor)
         ydpi = ::GetDeviceCaps(dc, LOGPIXELSY);
         ::ReleaseDC(NULL, dc);
     }
+#endif
     IM_ASSERT(xdpi == ydpi); // Please contact me if you hit this assert!
     return xdpi / 96.0f;
 }
