@@ -235,6 +235,49 @@ struct ImVec4
 #endif
 };
 
+struct ImMatrix
+{
+    float m00, m01, m10, m11, m20, m21;
+    ImMatrix() { m00 = m11 = 1.0f; m01 = m10 = m20 = m21 = 0.0f; }
+    ImMatrix(float _m00, float _m01, float _m10, float _m11, float _m20, float _m21) { m00 = _m00; m01 = _m01; m10 = _m10; m11 = _m11; m20 = _m20; m21 = _m21; }
+#ifdef IM_MATRIX_CLASS_EXTRA          // Define constructor and implicit cast operators in imconfig.h to convert back<>forth from your math types and ImMatrix.
+    IM_MATRIX_CLASS_EXTRA
+#endif
+
+    ImMatrix Inverted() const;
+
+    static inline ImMatrix Translation(const ImVec2& p) { return Translation(p.x, p.y); }
+    static inline ImMatrix Translation(float x, float y) { return ImMatrix(1.0f, 0.0f, 0.0f, 1.0f, x, y); }
+    static inline ImMatrix Scaling(const ImVec2& p) { return Scaling(p.x, p.y); }
+    static inline ImMatrix Scaling(float x, float y) { return ImMatrix(x, 0.0f, 0.0f, y, 0.0f, 0.0f); }
+    IMGUI_API static ImMatrix Rotation(float angle);
+    static inline ImMatrix Combine(const ImMatrix& lhs, const ImMatrix& rhs) // lhs * rhs = out
+    {
+        return ImMatrix(
+            rhs.m00 * lhs.m00 + rhs.m10 * lhs.m01,
+            rhs.m01 * lhs.m00 + rhs.m11 * lhs.m01,
+            rhs.m00 * lhs.m10 + rhs.m10 * lhs.m11,
+            rhs.m01 * lhs.m10 + rhs.m11 * lhs.m11,
+            rhs.m00 * lhs.m20 + rhs.m10 * lhs.m21 + rhs.m20,
+            rhs.m01 * lhs.m20 + rhs.m11 * lhs.m21 + rhs.m21);
+    }
+    inline void Transform(ImVec2* v, size_t count = 1) const
+    {
+        for (size_t i = 0; i < count; ++i, ++v)
+        {
+            *v = ImVec2(
+                m00 * v->x + m10 * v->y + m20,
+                m01 * v->x + m11 * v->y + m21);
+        }
+    }
+    inline ImVec2 Transformed(const ImVec2& v) const
+    {
+        ImVec2 p = v;
+        Transform(&p);
+        return p;
+    }
+};
+
 //-----------------------------------------------------------------------------
 // ImGui: Dear ImGui end-user API
 // (This is a namespace. You can add extra ImGui:: functions in your own separate file. Please don't modify imgui source files!)
@@ -1076,12 +1119,54 @@ enum ImGuiKey_
     ImGuiKey_Enter,
     ImGuiKey_Escape,
     ImGuiKey_KeyPadEnter,
-    ImGuiKey_A,                 // for text edit CTRL+A: select all
-    ImGuiKey_C,                 // for text edit CTRL+C: copy
-    ImGuiKey_V,                 // for text edit CTRL+V: paste
-    ImGuiKey_X,                 // for text edit CTRL+X: cut
-    ImGuiKey_Y,                 // for text edit CTRL+Y: redo
-    ImGuiKey_Z,                 // for text edit CTRL+Z: undo
+    ImGuiKey_0,         //
+    ImGuiKey_1,         //
+    ImGuiKey_2,         //
+    ImGuiKey_3,         //
+    ImGuiKey_4,         //
+    ImGuiKey_5,         //
+    ImGuiKey_6,         //
+    ImGuiKey_7,         //
+    ImGuiKey_8,         //
+    ImGuiKey_9,         //
+    ImGuiKey_A,         // for text edit CTRL+A: select all
+    ImGuiKey_B,         //
+    ImGuiKey_C,         // for text edit CTRL+C: copy
+    ImGuiKey_D,         //
+    ImGuiKey_E,         //
+    ImGuiKey_F,         //
+    ImGuiKey_G,         //
+    ImGuiKey_H,         //
+    ImGuiKey_I,         //
+    ImGuiKey_J,         //
+    ImGuiKey_K,         //
+    ImGuiKey_L,         //
+    ImGuiKey_M,         //
+    ImGuiKey_N,         //
+    ImGuiKey_O,         //
+    ImGuiKey_P,         //
+    ImGuiKey_Q,         //
+    ImGuiKey_R,         //
+    ImGuiKey_S,         //
+    ImGuiKey_T,         //
+    ImGuiKey_U,         //
+    ImGuiKey_V,         // for text edit CTRL+V: paste
+    ImGuiKey_W,         //
+    ImGuiKey_X,         // for text edit CTRL+X: cut
+    ImGuiKey_Y,         // for text edit CTRL+Y: redo
+    ImGuiKey_Z,         // for text edit CTRL+Z: undo
+    ImGuiKey_F1,        //
+    ImGuiKey_F2,        //
+    ImGuiKey_F3,        //
+    ImGuiKey_F4,        //
+    ImGuiKey_F5,        //
+    ImGuiKey_F6,        //
+    ImGuiKey_F7,        //
+    ImGuiKey_F8,        //
+    ImGuiKey_F9,        //
+    ImGuiKey_F10,       //
+    ImGuiKey_F11,       //
+    ImGuiKey_F12,       //
     ImGuiKey_COUNT
 };
 
@@ -2060,6 +2145,14 @@ struct ImDrawListSplitter
     IMGUI_API void              SetCurrentChannel(ImDrawList* draw_list, int channel_idx);
 };
 
+struct ImDrawTransformation
+{
+    unsigned int            VtxStartIdx;
+    ImMatrix                Transformation;
+    float                   LastInvTransformationScale;
+    ImVec2                  LastHalfPixel;
+};
+
 enum ImDrawCornerFlags_
 {
     ImDrawCornerFlags_None      = 0,
@@ -2112,6 +2205,10 @@ struct ImDrawList
     ImVector<ImVec2>        _Path;              // [Internal] current path building
     ImDrawCmdHeader         _CmdHeader;         // [Internal] template of active commands. Fields should match those of CmdBuffer.back().
     ImDrawListSplitter      _Splitter;          // [Internal] for channels api (note: prefer using your own persistent instance of ImDrawListSplitter!)
+    float                   _FringeScale;       // [Internal] anti-alias fringe is scaled by this value, this helps to keep things sharp while zooming at vertex buffer content
+    ImVector<ImDrawTransformation> _TransformationStack;
+    float                   _InvTransformationScale;
+    ImVec2                  _HalfPixel;
 
     // If you want to create ImDrawList instances, pass them ImGui::GetDrawListSharedData() or create and use your own ImDrawListSharedData (so you can use ImDrawList without ImGui)
     ImDrawList(const ImDrawListSharedData* shared_data) { memset(this, 0, sizeof(*this)); _Data = shared_data; }
@@ -2122,6 +2219,9 @@ struct ImDrawList
     IMGUI_API void  PopClipRect();
     IMGUI_API void  PushTextureID(ImTextureID texture_id);
     IMGUI_API void  PopTextureID();
+    IMGUI_API void  SetTransformation(const ImMatrix& transformation);
+    IMGUI_API void  ApplyTransformation(const ImMatrix& transformation);
+    IMGUI_API void  PopTransformation(int count = 1);
     inline ImVec2   GetClipRectMin() const { const ImVec4& cr = _ClipRectStack.back(); return ImVec2(cr.x, cr.y); }
     inline ImVec2   GetClipRectMax() const { const ImVec4& cr = _ClipRectStack.back(); return ImVec2(cr.z, cr.w); }
 
