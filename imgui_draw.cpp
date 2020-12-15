@@ -798,6 +798,7 @@ void ImDrawList::AddPolyline(const ImVec2* points, const int points_count, ImU32
     const int count = closed ? points_count : points_count - 1; // The number of line segments we need to draw
     const bool thick_line = ((fabsf(thickness - 1.0f) > FLT_EPSILON) || (fabsf(_InvTransformationScale - 1.0f) > FLT_EPSILON));
 
+    const bool thick_line = thickness > _FringeScale;
     if (Flags & ImDrawListFlags_AntiAliasedLines)
     {
         // Anti-aliased stroke
