@@ -1569,19 +1569,6 @@ enum ImGuiStyleVar_
     ImGuiStyleVar_COUNT
 };
 
-// Flags for InvisibleButton() [extended in imgui_internal.h]
-enum ImGuiButtonFlags_
-{
-    ImGuiButtonFlags_None                   = 0,
-    ImGuiButtonFlags_MouseButtonLeft        = 1 << 0,   // React on left mouse button (default)
-    ImGuiButtonFlags_MouseButtonRight       = 1 << 1,   // React on right mouse button
-    ImGuiButtonFlags_MouseButtonMiddle      = 1 << 2,   // React on center mouse button
-
-    // [Internal]
-    ImGuiButtonFlags_MouseButtonMask_       = ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle,
-    ImGuiButtonFlags_MouseButtonDefault_    = ImGuiButtonFlags_MouseButtonLeft
-};
-
 // Flags for ColorEdit3() / ColorEdit4() / ColorPicker3() / ColorPicker4() / ColorButton()
 enum ImGuiColorEditFlags_
 {
@@ -2483,7 +2470,6 @@ struct ImDrawList
     ImVector<ImVec4>        _ClipRectStack;     // [Internal]
     ImVector<ImTextureID>   _TextureIdStack;    // [Internal]
     ImVector<ImVec2>        _Path;              // [Internal] current path building
-    ImDrawListSplitter      _Splitter;          // [Internal] for channels api
     float                   _FringeScale;       // [Internal] anti-alias fringe is scaled by this value, this helps to keep things sharp while zooming at vertex buffer content
     ImDrawCmdHeader         _CmdHeader;         // [Internal] template of active commands. Fields should match those of CmdBuffer.back().
     ImDrawListSplitter      _Splitter;          // [Internal] for channels api (note: prefer using your own persistent instance of ImDrawListSplitter!)

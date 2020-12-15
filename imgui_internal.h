@@ -646,12 +646,6 @@ enum ImGuiButtonFlags_
     ImGuiButtonFlags_PressedOnDefault_      = ImGuiButtonFlags_PressedOnClickRelease
 };
 
-enum ImGuiSliderFlags_
-{
-    ImGuiSliderFlags_None                   = 0,
-    ImGuiSliderFlags_Vertical               = 1 << 0
-};
-
 enum ImGuiDragFlags_
 {
     ImGuiDragFlags_None                     = 0,
