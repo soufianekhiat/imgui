@@ -129,7 +129,6 @@ struct ImGuiLayout
     float                       Indent;             // Indent used to align items in vertical layout.
     ImVec2                      StartPos;           // Initial cursor position when BeginLayout is called.
     ImVec2                      StartCursorMaxPos;  // Maximum cursor position when BeginLayout is called.
-
     ImGuiLayout(ImGuiID id, ImGuiLayoutType type)
     {
         Id = id;
