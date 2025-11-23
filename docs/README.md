@@ -1,4 +1,4 @@
-Dear ImGui (Docking Branch + Stack Layout + Polyline)
+Dear ImGui (1.92.5: Docking Branch + Stack Layout + Polyline)
 =====
 
 <center><b><i>"Give someone state and they'll have a bug one day, but teach them how to represent state in two separate locations that have to be kept in sync and they'll have bugs for a lifetime."</i></b></center> <a href="https://twitter.com/rygorous/status/1507178315886444544">-ryg</a>
