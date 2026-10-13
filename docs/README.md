@@ -1,5 +1,5 @@
 Personal branch [LayoutDocking](https://github.com/soufianekhiat/imgui/tree/LayoutDocking) - here - merge of:
-* "New Polyline rendering": https://github.com/ocornut/imgui/pull/7972
+* "New Polyline rendering": https://github.com/ocornut/imgui/pull/7972 (now in upstream)
 * "Stack Layout Implementation": https://github.com/ocornut/imgui/pull/846
 * Official Docking branch
 
